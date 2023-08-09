@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="/style.css" type="text/css" />
+    <title>Goals Tracker</title>
+  </head>
+  <body>
+    <div class="container-lg">
+      <button type="button" class="btn btn-primary" id="createNewGoalButton">
+        Добавить цель
+      </button>
+      <ul id="goalsList"></ul>
+      <div class="modal" id="goalTitleModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Создание новой цели</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <div class="input-group mb-3">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="goalTitleInput"
+                  placeholder="Название для новой цели"
+                  aria-label="Название для новой цели"
+                />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                id="goalTitleModalConfirmButton"
+                disabled
+              >
+                Далее
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal" id="goalStartDayModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Создание новой цели</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <span id="goalStartDayDatePicker"></span>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Назад
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                id="goalCreateButton"
+              >
+                Создать
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
