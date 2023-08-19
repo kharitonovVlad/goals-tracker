@@ -1,0 +1,60 @@
+#app {
+  display: none;
+  padding-top: 16px;
+}
+
+.create-new-goal {
+  float: right;
+}
+
+.day {
+  width: 100px;
+  height: 50px;
+  border: 1px solid #e8e8e8;
+  text-align: center;
+}
+
+.success {
+  background: #49ff49;
+
+  &:not(:first-child) {
+    border-left: none;
+  }
+
+  &:not(:last-child) {
+    border-right: none;
+  }
+}
+
+.reject {
+  background: #ff6d6d;
+
+  &:not(:first-child) {
+    border-left: none;
+  }
+
+  &:not(:last-child) {
+    border-right: none;
+  }
+}
+
+.days-row {
+
+  &:not(:first-child) {
+    .success, .reject {
+      border-top: none;
+    }
+  }
+
+  &:not(:last-child) {
+    .success, .reject {
+      border-bottom: none;
+    }
+  }
+}
+
+.goals-list {
+  display: flex;
+  gap: 48px;
+  flex-wrap: wrap;
+}

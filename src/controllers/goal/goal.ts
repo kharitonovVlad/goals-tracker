@@ -4,6 +4,7 @@ import * as bootstrap from 'bootstrap';
 import AirDatepicker from 'air-datepicker';
 import 'air-datepicker/air-datepicker.css';
 import { DayStatusEnum } from '../../enums/day-status.enum';
+import * as moment from 'moment';
 
 function isObject(obj: unknown): obj is object {
   return typeof obj === 'object' && obj !== null;
@@ -26,7 +27,7 @@ const newGoal: Goal = {
 const createNewGoalButton = document.querySelector(
   '#createNewGoalButton'
 ) as HTMLButtonElement;
-const goalsList = document.querySelector('#goalsList') as HTMLUListElement;
+const goalsList = document.querySelector('#goalsList') as HTMLDivElement;
 const goalTitleModal = document.querySelector(
   '#goalTitleModal'
 ) as HTMLDivElement;
@@ -51,24 +52,85 @@ function getAndRenderCurrentGoals(): void {
     goalsList.removeChild(child);
     child = goalsList.lastElementChild;
   }
-  goals = ls.getItems();
+  goals = ls.getItems().map((goal) => {
+    goal.days = goal.days.map((day) => {
+      day.date = new Date(day.date);
+      return day;
+    });
+    return goal;
+  });
   if (goals.length && isGoal(goals[0])) {
     goals.forEach((goal) => {
-      const listItem = document.createElement('li');
-      listItem.insertAdjacentHTML(
+      const goalItem = document.createElement('div');
+      const daysItems: { date: string; status: DayStatusEnum }[] = [];
+      goal.days.forEach((day) => {
+        daysItems.push({
+          date: `<div>${moment(day.date).format('DD.MM.YYYY')}</div>`,
+          status: day.state,
+        });
+      });
+      let daysItemsIndex: number = 0;
+      const daysItemsRows: string[] = [];
+      for (let i = 0; i < 6; i++) {
+        const daysItemsCells: string[] = [];
+        for (let j = 0; j < 5; j++) {
+          daysItemsCells.push(
+            `<td class='day ${getDayStatusClass(
+              daysItems[daysItemsIndex].status
+            )}'>${daysItems[daysItemsIndex].date}</td>`
+          );
+          daysItemsIndex++;
+        }
+        daysItemsRows.push(
+          `<tr class="days-row">${daysItemsCells.join('')}</tr>`
+        );
+      }
+      goalItem.insertAdjacentHTML(
         'afterbegin',
         `
-          <div>
-            <span>${goal.title}</span>
+          <div class="card" style='width: 532px;'>
+            <h5 class="card-header">${goal.title}</h5>
+            <div class="card-body">
+              <table>
+                <tbody>
+                  ${daysItemsRows.join('')}
+                </tbody>
+              </table>
+            </div>
           </div>
         `
       );
-      goalsList.appendChild(listItem);
+      goalsList.appendChild(goalItem);
     });
   }
 }
 
+function getDayStatusClass(status: DayStatusEnum): string {
+  if (status === DayStatusEnum.Success) {
+    return 'success';
+  }
+
+  if (status === DayStatusEnum.Reject) {
+    return 'reject';
+  }
+
+  return '';
+}
+
 function createNewGoal(): void {
+  const onConfirmClicked = function () {
+    showGoalStartDayModal.call(
+      this,
+      function () {
+        titleModal.hide();
+      },
+      function () {
+        titleModal.show();
+      }
+    );
+    goalTitleModalConfirmButton.removeEventListener('click', onConfirmClicked);
+  };
+
   const titleModal = new bootstrap.Modal(goalTitleModal);
   titleModal.show();
 
@@ -80,24 +142,32 @@ function createNewGoal(): void {
     newGoal.title = target.value;
     goalTitleModalConfirmButton.disabled = !target.value.length;
   });
-  goalTitleModalConfirmButton.addEventListener(
-    'click',
-    showGoalStartDayModal.bind(
-      this,
-      function () {
-        titleModal.hide();
-      },
-      function () {
-        titleModal.show();
-      }
-    )
-  );
+  goalTitleModalConfirmButton.addEventListener('click', onConfirmClicked);
 }
 
 function showGoalStartDayModal(
   hideTitleModal: () => void,
   showTitleModal: () => void
 ): void {
+  const onConfirmClicked = function () {
+    newGoal.days.push({ date: startDay, state: DayStatusEnum.NotCome });
+    for (let i = 1; i < 30; i++) {
+      const nextDay = new Date(newGoal.days[i - 1].date);
+      nextDay.setDate(nextDay.getDate() + 1);
+      newGoal.days.push({ date: nextDay, state: DayStatusEnum.NotCome });
+    }
+    goals.push(newGoal);
+    ls.setItems(goals);
+    getAndRenderCurrentGoals();
+    startDayModal.hide();
+    const goalStartDayDatePickerContainer = document.querySelector(
+      '#goalStartDayDatePicker'
+    ) as HTMLSpanElement;
+    goalStartDayDatePickerContainer.innerHTML = '';
+
+    goalCreateButton.removeEventListener('click', onConfirmClicked);
+  };
+
   let startDay = new Date();
   const goalCreateButton = document.querySelector(
     '#goalCreateButton'
@@ -118,16 +188,5 @@ function showGoalStartDayModal(
   startDayModal.show();
   hideTitleModal();
   goalStartDayDatePicker.show();
-  goalCreateButton.addEventListener('click', () => {
-    newGoal.days.push({ date: startDay, state: DayStatusEnum.NotCome });
-    for (let i = 1; i < 30; i++) {
-      const nextDay = new Date(newGoal.days[i - 1].date);
-      nextDay.setDate(nextDay.getDate() + 1);
-      newGoal.days.push({ date: nextDay, state: DayStatusEnum.NotCome });
-    }
-    goals.push(newGoal);
-    ls.setItems(goals);
-    getAndRenderCurrentGoals();
-    startDayModal.hide();
-  });
+  goalCreateButton.addEventListener('click', onConfirmClicked);
 }

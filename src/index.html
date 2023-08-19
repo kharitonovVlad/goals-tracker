@@ -6,11 +6,15 @@
     <title>Goals Tracker</title>
   </head>
   <body>
-    <div class="container-lg">
-      <button type="button" class="btn btn-primary" id="createNewGoalButton">
+    <div class="container-lg" id="app">
+      <button
+        type="button"
+        class="btn btn-primary create-new-goal"
+        id="createNewGoalButton"
+      >
         Добавить цель
       </button>
-      <ul id="goalsList"></ul>
+      <div id="goalsList" class="goals-list"></div>
       <div class="modal" id="goalTitleModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
