@@ -64,11 +64,15 @@ function getAndRenderCurrentGoals(): void {
     goals.forEach((goal, goalIdx) => {
       const goalItem = document.createElement('div');
       const daysItems: { date: string; status: DayStatusEnum }[] = [];
+      let successDays = 0;
       goal.days.forEach((day) => {
         daysItems.push({
           date: `<div>${moment(day.date).format('DD.MM.YYYY')}</div>`,
           status: day.state,
         });
+        if (day.state === DayStatusEnum.Success) {
+          successDays++;
+        }
       });
       let daysItemsIndex: number = 0;
       const daysItemsRows: string[] = [];
@@ -88,6 +92,7 @@ function getAndRenderCurrentGoals(): void {
           `<tr class="days-row">${daysItemsCells.join('')}</tr>`
         );
       }
+      const progressValue = Math.trunc((successDays / goal.days.length) * 100);
       goalItem.insertAdjacentHTML(
         'afterbegin',
         `
@@ -102,6 +107,9 @@ function getAndRenderCurrentGoals(): void {
                   ${daysItemsRows.join('')}
                 </tbody>
               </table>
+              <div class="progress" style='margin-top: 8px;' role="progressbar" aria-label="Example with label" aria-valuenow="${progressValue}" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar" style="width: ${progressValue}%">${progressValue}%</div>
+              </div>
             </div>
           </div>
         `
