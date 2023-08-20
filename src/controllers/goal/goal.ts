@@ -5,6 +5,7 @@ import AirDatepicker from 'air-datepicker';
 import 'air-datepicker/air-datepicker.css';
 import { DayStatusEnum } from '../../enums/day-status.enum';
 import * as moment from 'moment';
+import { Day } from '../../interfaces/day.interface';
 
 function isObject(obj: unknown): obj is object {
   return typeof obj === 'object' && obj !== null;
@@ -60,7 +61,7 @@ function getAndRenderCurrentGoals(): void {
     return goal;
   });
   if (goals.length && isGoal(goals[0])) {
-    goals.forEach((goal) => {
+    goals.forEach((goal, goalIdx) => {
       const goalItem = document.createElement('div');
       const daysItems: { date: string; status: DayStatusEnum }[] = [];
       goal.days.forEach((day) => {
@@ -77,7 +78,9 @@ function getAndRenderCurrentGoals(): void {
           daysItemsCells.push(
             `<td class='day ${getDayStatusClass(
               daysItems[daysItemsIndex].status
-            )}'>${daysItems[daysItemsIndex].date}</td>`
+            )}' id='dayCell' data-goal-idx='${goalIdx}' data-day-idx='${daysItemsIndex}'>${
+              daysItems[daysItemsIndex].date
+            }</td>`
           );
           daysItemsIndex++;
         }
@@ -89,7 +92,10 @@ function getAndRenderCurrentGoals(): void {
         'afterbegin',
         `
           <div class="card" style='width: 532px;'>
-            <h5 class="card-header">${goal.title}</h5>
+            <h5 class="card-header goal-header">
+              ${goal.title}
+              <button class='btn btn-danger' id='removeGoalButton' data-goal-idx='${goalIdx}'>Удалить</button>
+            </h5>
             <div class="card-body">
               <table>
                 <tbody>
@@ -101,6 +107,82 @@ function getAndRenderCurrentGoals(): void {
         `
       );
       goalsList.appendChild(goalItem);
+    });
+    const removeGoalButtons = document.querySelectorAll(
+      '#removeGoalButton'
+    ) as NodeListOf<HTMLButtonElement>;
+    const goalsCells = document.querySelectorAll(
+      '#dayCell'
+    ) as NodeListOf<HTMLTableCellElement>;
+    removeGoalButtons.forEach((removeBtn) => {
+      removeBtn.addEventListener('click', (e) => {
+        const currentTarget = e.currentTarget as HTMLButtonElement;
+        if (currentTarget.dataset.goalIdx) {
+          goals = goals.filter((goal, index) => {
+            // @ts-ignore
+            return index !== +currentTarget.dataset.goalIdx;
+          });
+          ls.setItems(goals);
+          getAndRenderCurrentGoals();
+        }
+      });
+    });
+    goalsCells.forEach((cell) => {
+      cell.addEventListener('click', (cellClickEvent) => {
+        const currentTarget =
+          cellClickEvent.currentTarget as HTMLTableCellElement;
+        currentTarget.classList.add('active');
+        const stateOptions = document.createElement('div');
+        stateOptions.innerHTML = `
+          <ul>
+            <li class='success' data-state='${DayStatusEnum.Success}'>Выполнено</li>
+            <li class='reject' data-state='${DayStatusEnum.Reject}'>Не выполнено</li>
+            <li class='not-come' data-state='${DayStatusEnum.NotCome}'>Не указано</li>
+          </ul>
+        `;
+        stateOptions.classList.add('state-options');
+        stateOptions.style.position = 'absolute';
+        stateOptions.style.top = cellClickEvent.pageY - 5 + 'px';
+        stateOptions.style.left = cellClickEvent.pageX - 5 + 'px';
+
+        document.body.appendChild(stateOptions);
+        const stateOptionsItems = stateOptions.querySelectorAll(
+          'li'
+        ) as NodeListOf<HTMLLIElement>;
+        const onSelectStateOption = function (event: PointerEvent) {
+          if (currentTarget.dataset.goalIdx && currentTarget.dataset.dayIdx) {
+            const currentDay = goals[+currentTarget.dataset.goalIdx].days[
+              +currentTarget.dataset.dayIdx
+            ] as Day;
+            const target = event.currentTarget as HTMLLIElement;
+            switch (target.dataset.state) {
+              case DayStatusEnum.Success: {
+                currentDay.state = DayStatusEnum.Success;
+                break;
+              }
+              case DayStatusEnum.Reject: {
+                currentDay.state = DayStatusEnum.Reject;
+                break;
+              }
+              case DayStatusEnum.NotCome: {
+                currentDay.state = DayStatusEnum.NotCome;
+                break;
+              }
+            }
+            ls.setItems(goals);
+            getAndRenderCurrentGoals();
+            currentTarget.classList.remove('active');
+            stateOptions.remove();
+          }
+        };
+        stateOptionsItems.forEach((el) => {
+          el.addEventListener('click', onSelectStateOption);
+        });
+        stateOptions.addEventListener('mouseleave', () => {
+          currentTarget.classList.remove('active');
+          stateOptions.remove();
+        });
+      });
     });
   }
 }

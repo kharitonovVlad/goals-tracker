@@ -12,9 +12,18 @@
   height: 50px;
   border: 1px solid #e8e8e8;
   text-align: center;
+  cursor: pointer;
+
+  &.active {
+    opacity: 0.5;
+  }
+
+  &:hover {
+    opacity: 0.5;
+  }
 }
 
-.success {
+td.success {
   background: #49ff49;
 
   &:not(:first-child) {
@@ -26,7 +35,7 @@
   }
 }
 
-.reject {
+td.reject {
   background: #ff6d6d;
 
   &:not(:first-child) {
@@ -57,4 +66,46 @@
   display: flex;
   gap: 48px;
   flex-wrap: wrap;
+}
+
+.state-options {
+  background: #ffffff;
+  border: solid 1px #cccccc;
+  border-radius: 5px;
+  padding: 6px 12px;
+
+  ul {
+    margin-bottom: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      cursor: pointer;
+
+      &:not(:last-child) {
+        border-bottom: solid 1px #cccccc;
+      }
+
+      &:hover {
+
+        &.success {
+          border-bottom: solid 1px #49ff49;
+        }
+
+        &.reject {
+          border-bottom: solid 1px #ff6d6d;
+        }
+
+        &.not-come {
+          border-bottom: solid 1px #ffb500;
+        }
+      }
+    }
+  }
+}
+
+.goal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
